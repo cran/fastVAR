@@ -71,10 +71,16 @@ reduce.VARXlasso = function(y, x, Z, p, b, y.spec=matrix(1,nrow=nrow(y),ncol=nro
     var.lasso = apply(y.augmented, 2, .reduce.VARXlassocore, y=y,Z=Z,p=p,b=b,
       y.spec=y.spec, x.spec=x.spec, lengthY, lengthX)
   } else {
-    y.augmented.list = c(unname(as.data.frame(y.augmented)))  #converts matrix to list
-    var.lasso = mclapply(y.augmented.list, .reduce.VARXlassocore, y=y,Z=Z,p=p,b=b,
-      y.spec=y.spec, x.spec=x.spec, lengthY, lengthX, 
-      mc.cores=numcore, ...)
+    if(!require(multicore)) {
+      #Cannot load multicore, use apply instead
+      var.lasso = apply(y.augmented, 2, .reduce.VARXlassocore, y=y,Z=Z,p=p,b=b,
+        y.spec=y.spec, x.spec=x.spec, lengthY, lengthX)
+    } else {
+      y.augmented.list = c(unname(as.data.frame(y.augmented)))  #converts matrix to list
+      var.lasso = mclapply(y.augmented.list, .reduce.VARXlassocore, y=y,Z=Z,p=p,b=b,
+        y.spec=y.spec, x.spec=x.spec, lengthY, lengthX, 
+        mc.cores=numcore, ...)
+    }
   }
 
   #mclapply returns a list, so unlist it and recreate the B matrix

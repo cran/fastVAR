@@ -74,11 +74,17 @@ VARXlasso = function(y, x, p, b, y.spec=matrix(1,nrow=ncol(y),ncol=ncol(y)),
     var.lasso = apply(y.augmented, 2, .VARXlassocore, y=y,x=x,p=p,b=b,
       Z=Z, y.spec=y.spec, x.spec=x.spec)
   } else {
-    y.augmented.list = c(unname(as.data.frame(y.augmented)))
-    var.lasso = mclapply(y.augmented.list, .VARXlassocore, y=y,x=x,p=p,b=b,
-      Z=Z, y.spec=y.spec, x.spec=x.spec, mc.cores=numcore, ...)
-    var.lasso = matrix(unlist(var.lasso), nrow=(varz$k+1), ncol=ncol(y))
-    colnames(var.lasso) = colnames(y)
+    if(!require(multicore)) {
+      #Cannot load multicore, use apply instead
+      var.lasso = apply(y.augmented, 2, .VARXlassocore, y=y,x=x,p=p,b=b,
+        Z=Z, y.spec=y.spec, x.spec=x.spec)
+    } else {
+      y.augmented.list = c(unname(as.data.frame(y.augmented)))
+      var.lasso = mclapply(y.augmented.list, .VARXlassocore, y=y,x=x,p=p,b=b,
+        Z=Z, y.spec=y.spec, x.spec=x.spec, mc.cores=numcore, ...)
+      var.lasso = matrix(unlist(var.lasso), nrow=(varz$k+1), ncol=ncol(y))
+      colnames(var.lasso) = colnames(y)
+    }
   }
   rownames(var.lasso) = c('intercept', colnames(Z))
   if(getdiag) {

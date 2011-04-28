@@ -50,6 +50,7 @@ fastVAR = function(y, p=1, getdiag=T) {
   }
 }
 
+#Note that mclapply is not available for windows
 VARlasso = function(y, p, y.spec=matrix(1,nrow=ncol(y),ncol=ncol(y)), getdiag=T,
   numcore=1, ...) {
 
@@ -61,11 +62,17 @@ VARlasso = function(y, p, y.spec=matrix(1,nrow=ncol(y),ncol=ncol(y)), getdiag=T,
     var.lasso = apply(y.augmented, 2, .VARlassocore, y=y,p=p,
       Z=Z, y.spec=y.spec)
   } else {
-    y.augmented.list = c(unname(as.data.frame(y.augmented)))
-    var.lasso = mclapply(y.augmented.list, .VARlassocore, y=y,p=p,
-      Z=Z, y.spec=y.spec, mc.cores=numcore, ...)
-    var.lasso = matrix(unlist(var.lasso), nrow=(varz$k+1), ncol=ncol(y))
-    colnames(var.lasso) = colnames(y)
+    if(!require(multicore)) {
+      #Cannot load multicore, use apply instead
+      var.lasso = apply(y.augmented, 2, .VARlassocore, y=y,p=p,
+        Z=Z, y.spec=y.spec)
+    } else {
+      y.augmented.list = c(unname(as.data.frame(y.augmented)))
+      var.lasso = mclapply(y.augmented.list, .VARlassocore, y=y,p=p,
+        Z=Z, y.spec=y.spec, mc.cores=numcore, ...)
+      var.lasso = matrix(unlist(var.lasso), nrow=(varz$k+1), ncol=ncol(y))
+      colnames(var.lasso) = colnames(y)
+    }
   }
 
   rownames(var.lasso) = c('intercept', colnames(Z))

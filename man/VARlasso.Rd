@@ -56,6 +56,9 @@ Jeffrey Wong
   It is possible that the regression returns a coefficient matrix with NAs in it.
   If so, the diagnostic calculations cannot be done, and an error will return.
   To explore this, one can rerun the function with getdiag=F.
+
+  To run VARlasso with multiple cores requires the 'multicore' package to be
+  installed.
 }
 
 \seealso{

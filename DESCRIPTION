@@ -1,7 +1,7 @@
 Package: fastVAR
 Type: Package
 Title: fastVAR
-Version: 1.1
+Version: 1.2
 Date: 2011-04-28
 Author: Jeffrey Wong
 Maintainer: <jeff.ct.wong@stanford.edu>
@@ -17,7 +17,8 @@ Description: This package is designed for time series data.  Uses fast
         large VAR models on a compute cluster.
 License: GPL
 LazyLoad: yes
-Depends: glmnet, multicore
-Packaged: 2011-05-08 07:17:05 UTC; jeffrey
+Depends: glmnet
+Suggests: multicore
+Packaged: 2011-05-10 07:44:39 UTC; jeffrey
 Repository: CRAN
-Date/Publication: 2011-05-09 07:56:24
+Date/Publication: 2011-05-10 09:36:29

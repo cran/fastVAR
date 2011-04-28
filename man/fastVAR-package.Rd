@@ -23,11 +23,12 @@ Includes Canada data set from package vars to compare results and performance.
 \tabular{ll}{
 Package: \tab fastVAR\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
+Version: \tab 1.2\cr
 Date: \tab 2011-05-06\cr
 License: \tab GPL\cr
 LazyLoad: \tab yes\cr
-Depends: glmnet, multicore
+Depends: glmnet
+Suggests: multicore
 }
 
 Very few functions:
