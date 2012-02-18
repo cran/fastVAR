@@ -1,0 +1,17 @@
+d2c94cf5fea38af9afdc17587e64740c *DESCRIPTION
+8b54e5a89fbda3af5e077053d40bec76 *NAMESPACE
+d391a9282259634d741e966ae53c9beb *R/fastVAR.R
+605bd2533a22eb3fe98e102aec6acf75 *R/fastVARX.R
+34016372be94f098ef70ee4f1f63e0a6 *data/Canada.RData
+6aed36b3cc5672a0f10902f3c7a8404c *man/Canada.Rd
+52d0ff8a677e048c17a90b4b9374c6cd *man/VARXZ.Rd
+416daf85cddda4490db5fb864022a913 *man/VARXlasso.Rd
+802baa27f26a83978fbb08a5254b5c26 *man/VARXpredict.Rd
+309b11c5abccc54bc6dfd788274e1976 *man/VARZ.Rd
+84ea2309308e56691a5e5f7d609d7535 *man/VARdiag.Rd
+b3c0e7aeb7754640966628390bb3aeb9 *man/VARlasso.Rd
+f85ea9864ea814185b24c1e27afbffd6 *man/VARpredict.Rd
+0eb914a5c7b16f6e9984a340247c2ae7 *man/VARstep.Rd
+e5819fe87bc170b1403a6e80c567fc73 *man/fastVAR-package.Rd
+cbea169cad070924150ca9bee6cedc92 *man/fastVAR.Rd
+58b068d26fb726ae91172d7c8f4594fd *man/fastVARX.Rd

@@ -24,7 +24,7 @@ Includes Canada data set from package vars to compare results and performance.
 Package: \tab fastVAR\cr
 Type: \tab Package\cr
 Version: \tab 1.2\cr
-Date: \tab 2011-05-06\cr
+Date: \tab 2012-02-18\cr
 License: \tab GPL\cr
 LazyLoad: \tab yes\cr
 Depends: glmnet

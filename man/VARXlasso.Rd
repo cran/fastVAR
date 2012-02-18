@@ -7,7 +7,7 @@ Vector Autoregressive Model with Exogenous Inputs and Lasso Penalty
 Fit a VARX model with lasso penalty to multivariate response data
 }
 \usage{
-VARXlasso(y, x, p, b, y.spec = matrix(1, nrow = ncol(y), ncol = ncol(y)), x.spec = matrix(1, nrow = ncol(y), ncol = ncol(x)), getdiag = T, numcore = 1, ...)
+VARXlasso(y, x, p, b, lambda=NULL, y.spec = matrix(1, nrow = ncol(y), ncol = ncol(y)), x.spec = matrix(1, nrow = ncol(y), ncol = ncol(x)), getdiag = T, numcore = 1, ...)
 }
 \arguments{
   \item{y}{
@@ -21,6 +21,10 @@ The autoregressive lag of the response variable
 }
   \item{b}{
 The autoregressive lag of the exogenous variables
+}
+  \item{lambda}{
+A vector where the ith element represents the L1 penalty on the ith time series.  
+If NULL, fastVAR uses glmnet's cv.glmnet function to choose lambda
 }
   \item{y.spec}{
 A binary matrix that can constrain the number of lagged predictor variables.  

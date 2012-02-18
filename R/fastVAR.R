@@ -1,9 +1,12 @@
 #x is a multivariate time series where each col is a time series
 #p is the order of the AR component
 fastVAR = function(y, p=1, getdiag=T) {
+  if(p < 1) {
+    stop("p must be a positive integer")
+  }
   varz = VARZ(y, p)
   model = lm(varz$y.p ~ varz$Z)
-  if(sum(is.na(model$coefficients)) > 0) {
+  if(any(is.na(model$coefficients))) {
     stop("Multivariate lm has invalid coefficients.  
       Check the rank of the design matrix")
   }
@@ -18,23 +21,29 @@ fastVAR = function(y, p=1, getdiag=T) {
   }
 }
 
-.VARlassocore = function(j, y, p, Z, y.spec) {
+#j is the response vector from y.p
+.VARlassocore = function(j, y, p, lambda, Z, y.spec) {
   colIndex = j[1]
   y.to.remove = which(!y.spec[colIndex,])
   z.to.remove = c()
   if(length(y.to.remove) > 0) {
-    z.to.remove = as.vector(sapply(1:p, function(ii) {
-      y.to.remove + ncol(y)*(ii-1)
+    z.to.remove = as.vector(sapply(1:p, function(i) {
+      y.to.remove + ncol(y)*(i-1)
     }))
   }
-  if(length(z.to.remove) > 0)
+  if(length(z.to.remove) > 0) {
     Z.reduced = Z[,-z.to.remove]
-  else {
+  } else {
     Z.reduced = Z
   }
        
-  j.lasso = cv.glmnet(Z.reduced, j[-1])
-  j.lasso.s = j.lasso$lambda.min
+  if(is.null(lambda)) {
+    j.lasso = cv.glmnet(Z.reduced, j[-1])
+    j.lasso.s = j.lasso$lambda.min
+  } else {
+    j.lasso = glmnet(Z.reduced, j[-1])
+    j.lasso.s =lambda[colIndex]
+  }
 
   B = rep(0, ncol(Z)+1)  #make vector of coefficients full size
   B.reduced = rep(0, ncol(Z.reduced) + 1)
@@ -51,28 +60,25 @@ fastVAR = function(y, p=1, getdiag=T) {
 }
 
 #Note that mclapply is not available for windows
-VARlasso = function(y, p, y.spec=matrix(1,nrow=ncol(y),ncol=ncol(y)), getdiag=T,
-  numcore=1, ...) {
-
+VARlasso = function(y, p, lambda=NULL, y.spec=matrix(1,nrow=ncol(y),ncol=ncol(y)),
+  getdiag=T, numcore=1, ...) {
+  if(p < 1) stop("p must be a positive integer")
+  if(!is.matrix(y)) {
+    stop("y must be a matrix (not a data frame).  Consider using as.matrix(y)")
+  }
   varz = VARZ(y,p)
   Z = varz$Z
   y.augmented = rbind(1:ncol(y),varz$y.p )
 
-  if(numcore == 1) {
-    var.lasso = apply(y.augmented, 2, .VARlassocore, y=y,p=p,
+  if(numcore == 1 | !require(multicore)) {
+    var.lasso = apply(y.augmented, 2, .VARlassocore, y=y,p=p, lambda=lambda,
       Z=Z, y.spec=y.spec)
   } else {
-    if(!require(multicore)) {
-      #Cannot load multicore, use apply instead
-      var.lasso = apply(y.augmented, 2, .VARlassocore, y=y,p=p,
-        Z=Z, y.spec=y.spec)
-    } else {
-      y.augmented.list = c(unname(as.data.frame(y.augmented)))
-      var.lasso = mclapply(y.augmented.list, .VARlassocore, y=y,p=p,
-        Z=Z, y.spec=y.spec, mc.cores=numcore, ...)
-      var.lasso = matrix(unlist(var.lasso), nrow=(varz$k+1), ncol=ncol(y))
-      colnames(var.lasso) = colnames(y)
-    }
+    y.augmented.list = c(unname(as.data.frame(y.augmented)))
+    var.lasso = mclapply(y.augmented.list, .VARlassocore, y=y,p=p, lambda=lambda,
+      Z=Z, y.spec=y.spec, mc.cores=numcore, ...)
+    var.lasso = matrix(unlist(var.lasso), nrow=(varz$k+1), ncol=ncol(y))
+    colnames(var.lasso) = colnames(y)
   }
 
   rownames(var.lasso) = c('intercept', colnames(Z))
@@ -89,6 +95,9 @@ VARlasso = function(y, p, y.spec=matrix(1,nrow=ncol(y),ncol=ncol(y)), getdiag=T,
 }
 
 VARpredict = function(y, p, B, n.ahead=1, threshold) {
+  if(p < 1) {
+    stop("p must be a positive integer")
+  }
   y.pred = matrix(nrow=n.ahead, ncol=ncol(y))
   colnames(y.pred) = colnames(y)
   for(i in 1:n.ahead) {
@@ -109,7 +118,10 @@ VARpredict = function(y, p, B, n.ahead=1, threshold) {
   return (y.pred)
 }
 
+#Construct the design matrix for a VAR(p) model
 VARZ = function(y, p) {
+  if(p < 1) stop("p must be a positive integer")
+      
   if(is.null(colnames(y))) {
     colnames(y) = sapply(1:ncol(y), function(j) {
       paste('y',j,sep='')
@@ -153,12 +165,12 @@ VARstep = function(y, max.p) {
 VARdiag = function(y.p, Z, B, n, T, k, p, dof) {
   Z = cbind(1, Z)
   colnames(Z)[1] = 'intercept'
-  ZTZ = solve(t(Z) %*% Z)
+  ZTZ.inv = solve(t(Z) %*% Z)
   residual = y.p - Z %*% B
   residual.cov = t(residual) %*% residual  #residual covariance matrix
   sigma.hat = (1 / (T - k)) * 
     (residual.cov)
-  cov.hat = kronecker(sigma.hat, ZTZ)
+  cov.hat = kronecker(sigma.hat, ZTZ.inv)
   se = matrix(sqrt(diag(cov.hat)), nrow=nrow(B), ncol=ncol(B))
   tvalue = B / se
   pvalue = 2*(1 - pt(abs(tvalue),dof)) 

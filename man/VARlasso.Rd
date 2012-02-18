@@ -7,7 +7,7 @@ Vector Autoregressive Model with Lasso Penalty
 Fit a VAR model with lasso penalty to multivariate response data
 }
 \usage{
-VARlasso(y, p, y.spec = matrix(1, nrow = ncol(y), ncol = ncol(y)), getdiag = T, numcore = 1, ...)
+VARlasso(y, p, lambda=NULL, y.spec = matrix(1, nrow = ncol(y), ncol = ncol(y)), getdiag = T, numcore = 1, ...)
 }
 \arguments{
   \item{y}{
@@ -15,6 +15,10 @@ Response matrix where each column is a separate time series
 }
   \item{p}{
 The autoregressive lag of the VAR(p) model
+}
+  \item{lambda}{
+A vector where the ith element represents the L1 penalty on the ith time series.  
+If NULL, fastVAR uses glmnet's cv.glmnet function to choose lambda
 }
   \item{y.spec}{
 A binary matrix that can constrain the number of lagged predictor variables.  
